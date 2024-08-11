@@ -3,7 +3,7 @@
 ## Aluno
 Wesley Ricardo Lamb
 
-## 1943 - 1954: Primeiros computadores
+## 1943 - 1954: Primeiros computadores (Fase 0)
 Computadores gigantes. Não possuíam SO ou possuíam um SO muito simples chamados de Monitores, onde o seus propósitos eram chamar o programa do usuário, registrar alguns dados sobre o uso, liberar o hardware após o uso e linkar algumas bibliotecas ao programa do usuário.
 
 __Na Universidade de Cambridge, na Inglaterra, o EDSAC era utilizado por matemáticos a fim de resolver alguns problemas matemáticos mais complexos. Como havia uma fila de programas a serem executados e a necessidade de analisar o fluxo do programa, se viu a necessidade de criar um programa para trabalhar nestas necessidades. Foi assim que surgiram os programas Monitores__[1][2]
@@ -13,7 +13,7 @@ __Na Universidade de Cambridge, na Inglaterra, o EDSAC era utilizado por matemá
 - EDVAC;
 - EDSAC (Utilizava programas Monitores).
 
-## 1955 - Primeiros Sistemas Operacionais
+## 1955 - 1970: Primeiros Sistemas Operacionais (Fase 1)
 
 Nos primeiros anos, o modo de trabalho era o seguinte:
 - Um comitê era montado onde um matemático explicava o seu problema;
@@ -37,6 +37,24 @@ O primeiro SO documentado é o GM-NAA I/O para o IBM 704, criado no Laboratório
 IBM 704
 
 Naquela época, os sistemas operacionais eram desenvolvidos para aquele modelo de computador apenas, então era comum que as próprias empresas criassem seus próprios sistemas operacionais.
+
+### Principais SOs
+
+- OS/360
+- PCP
+- MFT
+- MVT
+- DOS/360
+- SCOPE
+- MACE
+- NOS
+
+## 1970: Sistemas Operacionais de tempo compartilhado (Fase 2)
+
+Com os avanços tecnológicos que aumentaram a velocidade dos computadores da época, começou-se a mudar o pensamento de que o computador só deveria fazer uma tarefa por vez. Surgindo assim o conceito de tempo compartilhado.
+
+
+
 
 # Referências
 
