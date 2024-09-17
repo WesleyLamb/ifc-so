@@ -2,27 +2,39 @@
 
 ThreadPool::ThreadPool(int num_threads)
 {
+    this->data = (OutputData**) malloc(sizeof(OutputData*) * 24);
+    for (int i = 0; i < 24; i++) {
+        this->data[i] = new OutputData();
+    }
     this->num_threads = num_threads;
 }
 
-void ThreadPool::Start()
+ThreadPool::~ThreadPool()
 {
-    // const uint32_t num_threads = std::thread::hardware_concurrency(); // Max # of threads the system supports
+    for (int i = 0; i < 24; i++) {
+        delete this->data[i];
+    }
+    delete this->data;
+}
+
+void ThreadPool::start()
+{
     for (uint32_t ii = 0; ii < this->num_threads; ++ii) {
-        threads.emplace_back(std::thread(&ThreadPool::ThreadLoop,this));
+        threads.emplace_back(std::thread(&ThreadPool::threadLoop, this));
     }
 }
 
-void ThreadPool::QueueTask(std::shared_ptr<Task> task)
+void ThreadPool::queueTask(Task *task)
 {
     {
         std::unique_lock<std::mutex> lock(this->queue_mutex);
         this->tasks.push(task);
+        task->queued = true;
     }
     this->mutex_condition.notify_one();
 }
 
-void ThreadPool::Stop()
+void ThreadPool::stop()
 {
     {
         std::unique_lock<std::mutex> lock(this->queue_mutex);
@@ -45,12 +57,11 @@ bool ThreadPool::busy()
     return poolbusy;
 }
 
-void ThreadPool::ThreadLoop() {
+void ThreadPool::threadLoop() {
     while (true) {
         std::function<void()> job;
         {
-            std::shared_ptr<Task> task;
-            // As chaves abaixo são para forçar o RAII do lock
+            Task *task;
             {
                 std::unique_lock<std::mutex> lock(this->queue_mutex);
                 this->mutex_condition.wait(lock, [this] {
@@ -63,7 +74,30 @@ void ThreadPool::ThreadLoop() {
                 this->tasks.pop();
             }
             task->process();
+            this->mergeTaskOutput(task);
+            delete task;
         }
-        job();
     }
+}
+
+
+void ThreadPool::mergeTaskOutput(Task *task)
+{
+    std::unique_lock<std::mutex> lock(output_mutex);
+    for (int i = 0; i < 24; i++) {
+        this->data[i]->accessCount += task->outputData[i]->accessCount;
+        this->data[i]->sucessCount += task->outputData[i]->sucessCount;
+    }
+}
+
+void ThreadPool::outputResults()
+{
+    int total = 0;
+    int sucesso = 0;
+    for (int i = 0; i < 24; i++) {
+        std::cout << i << " success => " << this->data[i]->sucessCount << " total => " << this->data[i]->accessCount << std::endl;
+        total += this->data[i]->accessCount;
+        sucesso += this->data[i]->sucessCount;
+    }
+    std::cout << "Sucesso: " << sucesso << " Total: " << total << std::endl;
 }

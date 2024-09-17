@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "chrono": "cpp",
-        "condition_variable": "cpp",
-        "queue": "cpp"
-    },
-    "C_Cpp.errorSquiggles": "disabled"
-}

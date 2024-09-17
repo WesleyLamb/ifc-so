@@ -3,15 +3,18 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc build active file",
-            "command": "/usr/bin/gcc",
+            "command": "/usr/bin/g++",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${workspaceFolder}/main.cpp",
                 "${workspaceFolder}/src/ThreadPool.cpp",
                 "${workspaceFolder}/src/Task.cpp",
+                "${workspaceFolder}/src/OutputData.cpp",
+                "${workspaceFolder}/src/datetime.cpp",
+                "${workspaceFolder}/src/timespan.cpp",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${workspaceFolder}/main"
             ],
             "options": {
                 "cwd": "${fileDirname}"
