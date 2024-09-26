@@ -65,21 +65,6 @@ void *tribalThreadFunc(void *argp)
         sem_getvalue(args->semaphore, &avail);
         printf("Alguém comeu, sobrou %d\n", avail);
         pthread_mutex_unlock(args->cauldronMutex);
-
-        // printf("Tribal %d went to bed\n", pthread_self());
-        // sleep(rand() % 5);
-        // printf("Tribal %d wakes up\n", pthread_self());
-        // pthread_mutex_lock(args->cauldronMutex);
-        // printf("Tribal %d aproaches the cauldron\n", pthread_self());
-        // sem_getvalue(args->semaphore, &avail);
-        // if (avail == 0) {
-        //     printf("Tribal %d wakes chef because there is no food\n", pthread_self());
-        //     pthread_mutex_unlock(args->chefMutex);
-        // }
-        // printf("Tribal %d is going to take food\n", pthread_self());
-        // sem_wait(args->semaphore);
-        // printf("Tribal's %d tummy is full\n", pthread_self());
-        // pthread_mutex_unlock(args->cauldronMutex);
     }
     return NULL;
 }
