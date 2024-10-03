@@ -5,12 +5,17 @@
 #include <errno.h>
 #include <time.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <math.h>
 
 #ifndef __GLIBC_USE_LIB_EXT1
     typedef int errno_t;
 #endif
 
-typedef
+typedef enum {
+    TypeA,
+    TypeB,
+} ColonyType;
 
 typedef struct {
     int startingPopulation;
@@ -21,33 +26,53 @@ typedef struct {
 } InputFlags;
 
 typedef struct {
+    int colonyType;
     int startingPopulation;
     int growthRate;
     int time;
+    int currentPopulation;
 
 } ThreadArgs;
+
+static struct option long_options[] =
+{
+    {"population", required_argument, NULL, 'p'},
+    {"growth", required_argument, NULL, 'g'},
+    {"time", required_argument, NULL, 't'},
+    {"resources", required_argument, NULL, 'r'},
+    {"threads", optional_argument, NULL, 'c'},
+    {"help", no_argument, NULL, 'h'},
+    {NULL, 0, NULL, 0}
+};
 
 errno_t handleInput(int argc, char **argv, InputFlags *inputFlags);
 
 int main(int argc, char **argv)
 {
     srand(time(NULL));
+    printf("%d\n", M_E);
 
     errno_t err;
     InputFlags inputFlags;
 
-    pthread_t **threads;
+    pthread_t *threads;
 
     err = handleInput(argc, argv, &inputFlags);
     if (err != 0) {
         return 1;
     }
 
-    threads = malloc(sizeof(pthread_t*) * inputFlags.threadCount);
-    for (int i = 0; i < inputFlags.threadCount; i++) {
-        threads[i] = malloc(sizeof(pthread_t));
-        pthread_create(threads[i], NULL, NULL, NULL);
-    }
+    // ThreadArgs *threadArgs = malloc(sizeof(ThreadArgs) * inputFlags.threadCount);
+    // threads = malloc(sizeof(pthread_t) * inputFlags.threadCount);
+    // for (int i = 0; i < inputFlags.threadCount; i++) {
+    //     threads[i] = malloc(sizeof(pthread_t));
+    //     threadArgs[i].colonyType = rand() % 2;
+    //     threadArgs[i].startingPopulation = inputFlags.startingPopulation;
+    //     threadArgs[i].growthRate = inputFlags.growthRate;
+    //     threadArgs[i].time = inputFlags.time;
+
+    //     pthread_create(threads[i], NULL, threadFunc, &threadArgs[i]);
+    // }
 
 
     return 0;
@@ -60,10 +85,11 @@ errno_t handleInput(int argc, char **argv, InputFlags *inputFlags)
     bool missingGrowthRate = true;
     bool missingTime = true;
     bool missingResourceCount = true;
+
     // Default values
     inputFlags->threadCount = sysconf(_SC_NPROCESSORS_ONLN);
-
-    while ((opt = getopt(argc, argv, "p:g:t:r:c:")) != -1)
+    //
+    while ((opt = getopt_long(argc, argv, "p:g:t:r:c:h:", long_options, NULL)) != -1)
     {
         switch (opt)
         {
@@ -86,6 +112,16 @@ errno_t handleInput(int argc, char **argv, InputFlags *inputFlags)
         case 'c':
             inputFlags->threadCount = atoi(optarg);
             break;
+        case 'h':
+            printf("Usage: %s [OPTIONS]\n", argv[0]);
+            printf("Options:\n");
+            printf("\t-p, --population POPULATION\t\tStarting population\n");
+            printf("\t-g, --growth GROWTH_RATE\t\tGrowth rate\n");
+            printf("\t-t, --time TOTAL_TIME\t\t\tTime\n");
+            printf("\t-r, --resources RESOURCES_AMOUNT\tResource count\n");
+            printf("\t-c, --threads THREAD_COUNT\t\tThread count\n");
+            printf("\t-h, --help\t\t\t\tShow this help message\n");
+            return EINVAL;
         default:
             break;
         }
