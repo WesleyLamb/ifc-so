@@ -6,10 +6,11 @@
             "command": "/usr/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",
-                "-lpthread",
-                "-lrt",
                 "-g",
                 "${workspaceFolder}/main.c",
+                "-lpthread",
+                "-lrt",
+                "-lm",
                 "-o",
                 "${workspaceFolder}/main"
             ],

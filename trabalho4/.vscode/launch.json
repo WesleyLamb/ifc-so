@@ -18,8 +18,8 @@
                 "15",
                 "--resources",
                 "2",
-                // "--threads",
-                // "12"
+                "--threads",
+                "1"
             ],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",

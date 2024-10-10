@@ -6,6 +6,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <semaphore.h>
 #include <math.h>
 
 #ifndef __GLIBC_USE_LIB_EXT1
@@ -27,10 +28,14 @@ typedef struct {
 
 typedef struct {
     int colonyType;
-    int startingPopulation;
-    int growthRate;
+    double startingPopulation;
+    double growthRate;
+    double currentPopulation;
     int time;
-    int currentPopulation;
+    int currentGeneration;
+    sem_t* nutrients;
+    sem_t* area;
+    time_t elapsed;
 
 } ThreadArgs;
 
@@ -40,40 +45,52 @@ static struct option long_options[] =
     {"growth", required_argument, NULL, 'g'},
     {"time", required_argument, NULL, 't'},
     {"resources", required_argument, NULL, 'r'},
-    {"threads", optional_argument, NULL, 'c'},
+    {"threads", required_argument, NULL, 'c'},
     {"help", no_argument, NULL, 'h'},
     {NULL, 0, NULL, 0}
 };
 
 errno_t handleInput(int argc, char **argv, InputFlags *inputFlags);
+void* threadFunc(void *args);
 
 int main(int argc, char **argv)
 {
     srand(time(NULL));
-    printf("%d\n", M_E);
 
     errno_t err;
     InputFlags inputFlags;
-
-    pthread_t *threads;
 
     err = handleInput(argc, argv, &inputFlags);
     if (err != 0) {
         return 1;
     }
 
-    // ThreadArgs *threadArgs = malloc(sizeof(ThreadArgs) * inputFlags.threadCount);
-    // threads = malloc(sizeof(pthread_t) * inputFlags.threadCount);
-    // for (int i = 0; i < inputFlags.threadCount; i++) {
-    //     threads[i] = malloc(sizeof(pthread_t));
-    //     threadArgs[i].colonyType = rand() % 2;
-    //     threadArgs[i].startingPopulation = inputFlags.startingPopulation;
-    //     threadArgs[i].growthRate = inputFlags.growthRate;
-    //     threadArgs[i].time = inputFlags.time;
+    sem_t nutrients;
+    sem_init(&nutrients, 0, inputFlags.resourceCount);
 
-    //     pthread_create(threads[i], NULL, threadFunc, &threadArgs[i]);
-    // }
+    sem_t area;
+    sem_init(&area, 0, inputFlags.resourceCount);
 
+    ThreadArgs *threadArgs = malloc(sizeof(ThreadArgs) * inputFlags.threadCount);
+    pthread_t **threads = malloc(sizeof(pthread_t*) * inputFlags.threadCount);
+
+    for (int i = 0; i < inputFlags.threadCount; i++) {
+        threads[i] = malloc(sizeof(pthread_t));
+        threadArgs[i].colonyType = rand() % 2;
+        threadArgs[i].startingPopulation = inputFlags.startingPopulation;
+        threadArgs[i].growthRate = inputFlags.growthRate;
+        threadArgs[i].time = inputFlags.time;
+        threadArgs[i].currentPopulation = inputFlags.startingPopulation;
+        threadArgs[i].currentGeneration = 1;
+        threadArgs[i].nutrients = &nutrients;
+        threadArgs[i].area = &area;
+
+        pthread_create(threads[i], NULL, threadFunc, &threadArgs[i]);
+    }
+
+    for (int i = 0; i < inputFlags.threadCount; i++) {
+        pthread_join(*threads[i], NULL);
+    }
 
     return 0;
 }
@@ -89,16 +106,16 @@ errno_t handleInput(int argc, char **argv, InputFlags *inputFlags)
     // Default values
     inputFlags->threadCount = sysconf(_SC_NPROCESSORS_ONLN);
     //
-    while ((opt = getopt_long(argc, argv, "p:g:t:r:c:h:", long_options, NULL)) != -1)
+    while ((opt = getopt_long(argc, argv, "p:g:t:r:c:h", long_options, NULL)) != -1)
     {
         switch (opt)
         {
         case 'p':
-            inputFlags->startingPopulation = atoi(optarg);
+            inputFlags->startingPopulation = atof(optarg);
             missingStartingPopulation = false;
             break;
         case 'g':
-            inputFlags->growthRate = atoi(optarg);
+            inputFlags->growthRate = atof(optarg);
             missingGrowthRate = false;
             break;
         case 't':
@@ -148,4 +165,37 @@ errno_t handleInput(int argc, char **argv, InputFlags *inputFlags)
     }
 
     return EXIT_SUCCESS;
+}
+
+void *threadFunc(void *args)
+{
+    time_t initialTime = time(NULL);
+
+    ThreadArgs *threadArgs = (ThreadArgs *)args;
+    while (threadArgs->currentGeneration <= threadArgs->time) {
+        sleep(rand() % 5);
+        // if (threadArgs->colonyType == TypeA) {
+        //     sem_wait(threadArgs->nutrients);
+        // } else {
+            sem_wait(threadArgs->area);
+        // }
+
+        // if (threadArgs->colonyType == TypeA) {
+        //     sem_wait(threadArgs->area);
+        // } else {
+            sem_wait(threadArgs->nutrients);
+        // }
+
+        threadArgs->currentPopulation = threadArgs->currentPopulation * (1 + threadArgs->growthRate / 100.0);
+
+        sem_post(threadArgs->nutrients);
+        sem_post(threadArgs->area);
+        threadArgs->currentGeneration++;;
+    }
+    threadArgs->elapsed = time(NULL) - initialTime;
+    // printf("Colony type: %d\n", threadArgs->colonyType);
+    // printf("Starting population: %d\n", threadArgs->startingPopulation);
+    // printf("Growth rate: %d\n", threadArgs->growthRate);
+    // printf("Time: %d\n", threadArgs->time);
+    // printf("Current population: %d\n", threadArgs->currentPopulation);
 }
