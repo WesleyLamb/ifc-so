@@ -92,6 +92,15 @@ int main(int argc, char **argv)
         pthread_join(*threads[i], NULL);
     }
 
+    for (int i = 0; i <inputFlags.threadCount; i++) {
+        printf("Colony type: %d\n", threadArgs[i].colonyType);
+        printf("Starting population: %f\n", threadArgs[i].startingPopulation);
+        printf("Growth rate: %f\n", threadArgs[i].growthRate);
+        printf("Time: %d\n", threadArgs[i].time);
+        printf("Final population: %f\n", threadArgs[i].currentPopulation);
+        printf("Elapsed time: %ld\n", threadArgs[i].elapsed);
+    }
+
     return 0;
 }
 
@@ -186,7 +195,7 @@ void *threadFunc(void *args)
             sem_wait(threadArgs->nutrients);
         // }
 
-        threadArgs->currentPopulation = threadArgs->currentPopulation * (1 + threadArgs->growthRate / 100.0);
+        threadArgs->currentPopulation += threadArgs->currentPopulation * (threadArgs->growthRate);
 
         sem_post(threadArgs->nutrients);
         sem_post(threadArgs->area);

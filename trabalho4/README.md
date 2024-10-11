@@ -23,7 +23,7 @@ Cada colônia de bactérias (representada por uma thread) precisa de recursos co
     - Recurso A: Por exemplo, nutrientes.
     - Recurso B: Por exemplo, espaço ou área de cultivo.
 
-3. Se uma colônia obtiver apenas um dos recursos e ficar esperando pelo outro, ocorre uma situação de bloqueioque pode levar a um impasse.
+3. Se uma colônia obtiver apenas um dos recursos e ficar esperando pelo outro, ocorre uma situação de bloqueio que pode levar a um impasse.
 
 ### Objetivo
 

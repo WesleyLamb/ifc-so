@@ -13,13 +13,13 @@
                 "--population",
                 "2",
                 "--growth",
-                "2",
+                "1",
                 "--time",
                 "15",
                 "--resources",
                 "2",
                 "--threads",
-                "1"
+                "15"
             ],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",
