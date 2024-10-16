@@ -6,8 +6,11 @@
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/syscall.h>
 #include <semaphore.h>
 #include <math.h>
+// Descomente a linha abaixo para adicionar o intermediador e evitar deadlock
+#define INTERMEDIATOR
 
 #ifndef __GLIBC_USE_LIB_EXT1
     typedef int errno_t;
@@ -35,7 +38,11 @@ typedef struct {
     int currentGeneration;
     sem_t* nutrients;
     sem_t* area;
+    sem_t* intermediator;
     time_t elapsed;
+    pid_t threadId;
+    int threadCount;
+    int resourceCount;
 
 } ThreadArgs;
 
@@ -71,6 +78,9 @@ int main(int argc, char **argv)
     sem_t area;
     sem_init(&area, 0, inputFlags.resourceCount);
 
+    sem_t intermediator;
+    sem_init(&intermediator, 0, inputFlags.resourceCount);
+
     ThreadArgs *threadArgs = malloc(sizeof(ThreadArgs) * inputFlags.threadCount);
     pthread_t **threads = malloc(sizeof(pthread_t*) * inputFlags.threadCount);
 
@@ -84,6 +94,9 @@ int main(int argc, char **argv)
         threadArgs[i].currentGeneration = 1;
         threadArgs[i].nutrients = &nutrients;
         threadArgs[i].area = &area;
+        threadArgs[i].intermediator = &intermediator;
+        threadArgs[i].threadCount = inputFlags.threadCount;
+        threadArgs[i].resourceCount = inputFlags.resourceCount;
 
         pthread_create(threads[i], NULL, threadFunc, &threadArgs[i]);
     }
@@ -181,25 +194,50 @@ void *threadFunc(void *args)
     time_t initialTime = time(NULL);
 
     ThreadArgs *threadArgs = (ThreadArgs *)args;
+    threadArgs->threadId = syscall(SYS_gettid);
+    errno_t err;
+    struct timespec timeout;
     while (threadArgs->currentGeneration <= threadArgs->time) {
-        sleep(rand() % 5);
-        // if (threadArgs->colonyType == TypeA) {
-        //     sem_wait(threadArgs->nutrients);
-        // } else {
-            sem_wait(threadArgs->area);
-        // }
+        sleep(rand() % 2);
 
-        // if (threadArgs->colonyType == TypeA) {
-        //     sem_wait(threadArgs->area);
-        // } else {
-            sem_wait(threadArgs->nutrients);
-        // }
+        #ifdef INTERMEDIATOR
+        sem_wait(threadArgs->intermediator);
+        #endif
+
+        timeout.tv_sec = time(NULL) + ((threadArgs->resourceCount) * 2);
+        if (threadArgs->colonyType == TypeA) {
+            err = sem_timedwait(threadArgs->nutrients, &timeout);
+        } else {
+            printf("%d is trying to get area\n", threadArgs->threadId);
+            err = sem_timedwait(threadArgs->area, &timeout);
+        }
+        if (err != 0) {
+            printf("%d detected a deadlock\n", threadArgs->threadId);
+            break;
+        }
+
+        sleep(1);
+
+        if (threadArgs->colonyType == TypeA) {
+            err = sem_timedwait(threadArgs->area, &timeout);
+        } else {
+            printf("%d is trying to get nutrients\n", threadArgs->threadId);
+            err = sem_timedwait(threadArgs->nutrients, &timeout);
+        }
+        if (err != 0) {
+            printf("%d detected a deadlock\n", threadArgs->threadId);
+            break;
+        }
+
+        #ifdef INTERMEDIATOR
+        sem_post(threadArgs->intermediator);
+        #endif
 
         threadArgs->currentPopulation += threadArgs->currentPopulation * (threadArgs->growthRate);
 
         sem_post(threadArgs->nutrients);
         sem_post(threadArgs->area);
-        threadArgs->currentGeneration++;;
+        threadArgs->currentGeneration++;
     }
     threadArgs->elapsed = time(NULL) - initialTime;
     // printf("Colony type: %d\n", threadArgs->colonyType);

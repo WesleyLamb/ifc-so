@@ -15,7 +15,7 @@
                 "--growth",
                 "1",
                 "--time",
-                "15",
+                "50",
                 "--resources",
                 "2",
                 "--threads",
