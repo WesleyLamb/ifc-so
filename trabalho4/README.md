@@ -24,12 +24,30 @@ Para gerar o executável (apenas Linux), compile o arquivo main.c com o seguinte
     gcc ./main.c -lpthread -lrt -lm -o ./main
 ```
 
-Para habilitar a prevenção de impasse, descomente a linha 13 do arquivo `main.c`
+Para habilitar a prevenção de impasse, descomente a linha 13 do arquivo `main.c` e compile o projeto novamente
+
+## Execução
+
+Para executar o programa, rode o seguinte comando no terminal:
+```bash
+    main \
+        -p VALOR \ # População inicial
+        -g VALOR \ # Taxa de crescimento
+        -t VALOR \ # Quantidade de ciclos
+        -r VALOR \ # Quantidade de recursos
+        -c VALOR \ # Quantidade de threads (colônias)
+```
 
 ## Análise
 
-Os testes abaixo foram efetuados em uma máquina com 8GB de RAM e um i7-4710MQ 3.5GHz. Foram realizados 10 testes para cada linha da tabela abaixo
+Sem a inclusão da prevenção de impasses, os testes abaixo foram efetuados em uma máquina com 32GB de RAM e um i5-10400F 4.3GHz. Foram realizados 10 testes para cada linha da tabela abaixo.
 
-|Recursos|Ciclos|Threads|Tempo médio por thread|Tempo total|Deadlocks|
-|:-:|:-:|:-:|:-:|:-:|:-:|
-||
+|Recursos|Ciclos|Threads|Tempo médio por thread (s)|Deadlocks|
+|:-:|:-:|:-:|:-:|:-:|
+|1|10|2|20,012|4|
+|2|10|4|18,010|3|
+|3|10|6|18,011|2|
+|4|10|8|18,011|3|
+|5|10|10|18,011|0|
+
+Após a inclusão da prevenção de impasses, não ocorreram mais deadlocks e o aumento na complexidade do código foi insignificante (Adicionado apenas mais um semáforo).

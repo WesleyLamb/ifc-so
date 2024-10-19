@@ -10,7 +10,7 @@
 #include <semaphore.h>
 #include <math.h>
 // Descomente a linha abaixo para adicionar o intermediador e evitar deadlock
-// #define INTERMEDIATOR
+#define INTERMEDIATOR
 
 #ifndef __GLIBC_USE_LIB_EXT1
     typedef int errno_t;
@@ -204,8 +204,9 @@ void *threadFunc(void *args)
         sem_wait(threadArgs->intermediator);
         #endif
 
-        timeout.tv_sec = time(NULL) + ((threadArgs->resourceCount) * 2);
+        timeout.tv_sec = time(NULL) + threadArgs->threadCount;
         if (threadArgs->colonyType == TypeA) {
+            printf("%d is trying to get nutrients\n", threadArgs->threadId);
             err = sem_timedwait(threadArgs->nutrients, &timeout);
         } else {
             printf("%d is trying to get area\n", threadArgs->threadId);
@@ -219,6 +220,7 @@ void *threadFunc(void *args)
         sleep(1);
 
         if (threadArgs->colonyType == TypeA) {
+            printf("%d is trying to get area\n", threadArgs->threadId);
             err = sem_timedwait(threadArgs->area, &timeout);
         } else {
             printf("%d is trying to get nutrients\n", threadArgs->threadId);
