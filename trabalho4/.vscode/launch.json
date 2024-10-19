@@ -15,11 +15,11 @@
                 "--growth",
                 "1",
                 "--time",
-                "50",
+                "10",
                 "--resources",
-                "2",
+                "1",
                 "--threads",
-                "15"
+                "2"
             ],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",

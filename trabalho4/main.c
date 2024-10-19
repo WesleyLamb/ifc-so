@@ -10,7 +10,7 @@
 #include <semaphore.h>
 #include <math.h>
 // Descomente a linha abaixo para adicionar o intermediador e evitar deadlock
-#define INTERMEDIATOR
+// #define INTERMEDIATOR
 
 #ifndef __GLIBC_USE_LIB_EXT1
     typedef int errno_t;
@@ -198,7 +198,7 @@ void *threadFunc(void *args)
     errno_t err;
     struct timespec timeout;
     while (threadArgs->currentGeneration <= threadArgs->time) {
-        sleep(rand() % 2);
+        sleep(rand() % 2    );
 
         #ifdef INTERMEDIATOR
         sem_wait(threadArgs->intermediator);
@@ -240,9 +240,4 @@ void *threadFunc(void *args)
         threadArgs->currentGeneration++;
     }
     threadArgs->elapsed = time(NULL) - initialTime;
-    // printf("Colony type: %d\n", threadArgs->colonyType);
-    // printf("Starting population: %d\n", threadArgs->startingPopulation);
-    // printf("Growth rate: %d\n", threadArgs->growthRate);
-    // printf("Time: %d\n", threadArgs->time);
-    // printf("Current population: %d\n", threadArgs->currentPopulation);
 }
